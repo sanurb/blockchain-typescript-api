@@ -1,4 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
+import { Blockchain } from '../blockchain';
+
+const blockchain = new Blockchain();
 
 const serverHealthCheck = (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({
@@ -6,4 +9,8 @@ const serverHealthCheck = (req: Request, res: Response, next: NextFunction) => {
     });
 };
 
-export default { serverHealthCheck };
+const blocksStatus = (req: Request, res: Response, next: NextFunction) => {
+    return res.status(200).json(blockchain.chain);
+};
+
+export default { serverHealthCheck, blocksStatus};
