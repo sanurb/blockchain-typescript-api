@@ -1,18 +1,8 @@
 const SHA256 = require('crypto-js/sha256');
 export {};
+import { IBlock } from './interfaces';
 
-interface IBlockInterface {
-    timestamp: string;
-    transactions: Array<any>;
-    previousHash: string;
-    hash: string;
-    nonce: number;
-    validator: string;
-    signature: string;
-    toString(): string;
-}
-
-class Block implements IBlockInterface {
+class Block implements IBlock {
     timestamp: string;
     transactions: Array<any>;
     previousHash: string;
