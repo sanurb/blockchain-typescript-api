@@ -13,4 +13,10 @@ const blocksStatus = (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json(blockchain.chain);
 };
 
-export default { serverHealthCheck, blocksStatus};
+const mineBlock = (req: Request, res: Response, next: NextFunction) => {
+    const block = blockchain.addBlock(req.body.data);
+    console.log(`New block added: ${block.toString()}`);
+    return res.status(200).json({ data: block });
+};
+
+export default { serverHealthCheck, blocksStatus, mineBlock };
