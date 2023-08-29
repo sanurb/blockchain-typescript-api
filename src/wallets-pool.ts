@@ -21,4 +21,11 @@ export class WalletsPool implements IWalletsPool {
     getWalletByPublicKey(publicKey: string) {
         return this.wallets.find((wallet) => wallet.publicKey === publicKey);
     }
+
+    updateWalletBalance(publicKey: string, newBalance: number) {
+        const wallet = this.getWalletByPublicKey(publicKey);
+        if (wallet) {
+            wallet.balance = newBalance;
+        }
+    }
 }
