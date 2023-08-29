@@ -3,6 +3,8 @@ import { Blockchain } from "../blockchain";
 import { TransactionPool } from "../transaction-pool";
 import { Wallet } from "../wallet";
 import { WalletsPool } from "../wallets-pool";
+const { TRANSACTION_FEE } = require('../config');
+
 
 const blockchain = new Blockchain();
 const transactionPool = new TransactionPool([]);
@@ -89,9 +91,7 @@ const createTransaction = async (req: Request, res: Response, next: NextFunction
     try {
         const { to, amount, type, publicKey } = req.body;
 
-        if (transactionPool.hasTransaction(publicKey, to, amount, type)) {
-            return res.status(400).json({ message: "Transacción duplicada" });
-        }
+		const totalCost = amount + TRANSACTION_FEE;
 
         const senderWalletData = walletsPool.getWalletByPublicKey(publicKey);
 
@@ -100,10 +100,6 @@ const createTransaction = async (req: Request, res: Response, next: NextFunction
         }
 
         const senderWallet = new Wallet(senderWalletData.secret);
-
-        if (senderWallet.balance < amount) {
-            return res.status(400).json({ message: "Saldo insuficiente" });
-        }
 
         const receiverWalletData = walletsPool.getWalletByPublicKey(to);
 
@@ -122,7 +118,7 @@ const createTransaction = async (req: Request, res: Response, next: NextFunction
         if (transaction) {
             transactionPool.addTransaction(transaction);
             walletsPool.updateWalletBalance(publicKey, senderWallet.balance - amount);
-            walletsPool.updateWalletBalance(to, receiverWalletData.balance + amount);
+            walletsPool.updateWalletBalance(to, receiverWalletData.balance + totalCost);
             const block = blockchain.addBlock(transaction);
 
             return res.status(200).json({ block, transaction: transaction.output });
@@ -135,19 +131,16 @@ const createTransaction = async (req: Request, res: Response, next: NextFunction
 };
 
 
-const getTransactionStatus = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
+const getTransactionStatus = (req: Request, res: Response, next: NextFunction) => {
 	const { transactionId } = req.params;
 	const transaction = transactionPool.getTransactionById(transactionId);
 
 	if (!transaction) {
 		return res.status(404).json({ message: "Transacción no encontrada" });
 	}
-
-	return res.status(200).json(transaction);
+	
+	const safeTransaction = safeStringify(transaction);
+	return res.status(200).json(JSON.parse(safeTransaction));
 };
 
 const getTransactionsByAddress = (
@@ -172,6 +165,22 @@ const mineBlock = (req: Request, res: Response, next: NextFunction) => {
 	console.log(`New block added: ${block.toString()}`);
 	return res.status(200).json({ data: block });
 };
+
+function safeStringify(obj: any, indent = 2) {
+    let cache: any = [];
+    const retVal = JSON.stringify(
+        obj,
+        (key, value) =>
+            typeof value === "object" && value !== null
+                ? cache.includes(value)
+                    ? undefined // Elimina la referencia circular
+                    : cache.push(value) && value
+                : value,
+        indent
+    );
+    cache = null;
+    return retVal;
+}
 
 export default {
 	createWallet,
