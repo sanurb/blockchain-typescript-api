@@ -91,7 +91,7 @@ const createTransaction = async (req: Request, res: Response, next: NextFunction
     try {
         const { to, amount, type, publicKey } = req.body;
 
-		const totalCost = amount + TRANSACTION_FEE;
+		const transactionAmount = amount - TRANSACTION_FEE;
 
         const senderWalletData = walletsPool.getWalletByPublicKey(publicKey);
 
@@ -118,7 +118,7 @@ const createTransaction = async (req: Request, res: Response, next: NextFunction
         if (transaction) {
             transactionPool.addTransaction(transaction);
             walletsPool.updateWalletBalance(publicKey, senderWallet.balance - amount);
-            walletsPool.updateWalletBalance(to, receiverWalletData.balance + totalCost);
+            walletsPool.updateWalletBalance(to, receiverWalletData.balance + transactionAmount);
             const block = blockchain.addBlock(transaction);
 
             return res.status(200).json({ block, transaction: transaction.output });
