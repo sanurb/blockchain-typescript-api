@@ -200,7 +200,3 @@ Minar un nuevo bloque.
   ```
 
 ---
-
-Esta documentación del README proporciona a los desarrolladores una comprensión clara de cómo utilizar cada uno de los endpoints.
-
-¿Hay algo más en lo que te gustaría que me concentre antes de pasar a la refactorización del código?
